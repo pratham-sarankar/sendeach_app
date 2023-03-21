@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:sendeach_app/app/data/repositories/device_repository.dart';
 
 class AuthService extends GetxService {
   late final GetStorage _box;
@@ -21,6 +22,8 @@ class AuthService extends GetxService {
   }
 
   Future<void> logout() async {
+    await Get.find<DeviceRepository>().disconnect();
+    await Future.delayed(const Duration(milliseconds: 400));
     await _box.write("token", null);
     return;
   }

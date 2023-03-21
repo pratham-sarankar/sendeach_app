@@ -14,17 +14,6 @@ class SmsView extends GetView<SmsController> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Send SMS"),
-        actions: [
-          PopupMenuButton(
-            itemBuilder: (context) {
-              return [
-                const PopupMenuItem(
-                  child: Text("My Devices"),
-                )
-              ];
-            },
-          )
-        ],
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 15),

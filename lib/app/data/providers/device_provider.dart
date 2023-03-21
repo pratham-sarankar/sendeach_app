@@ -1,26 +1,33 @@
-import 'dart:convert';
-
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:sendeach_app/app/data/repositories/device_repository.dart';
 import 'package:sendeach_app/app/data/services/auth_service.dart';
 import 'package:sendeach_app/app/data/services/device_info_service.dart';
 import 'package:sendeach_app/app/data/services/fcm_service.dart';
 
 class DeviceProvider extends GetConnect {
   late RxBool isConnected;
+  late RxBool isLoading;
+  late RxBool isConnecting;
+  late RxBool isDisconnecting;
 
   @override
   void onInit() {
     baseUrl = const String.fromEnvironment("host");
+    isLoading = true.obs;
     isConnected = false.obs;
-    if(Get.find<AuthService>().isLoggedIn){
-      updateConnection();
+    isConnecting = false.obs;
+    isDisconnecting = false.obs;
+    if (Get.find<AuthService>().isLoggedIn) {
+      updateConnection().then((value) {
+        isLoading.value = false;
+      });
+    } else {
+      isLoading.value = false;
     }
     super.onInit();
   }
 
-  void updateConnection() async {
+  Future updateConnection() async {
     await Permission.sms.request();
     String fcmToken = await Get.find<FCMService>().readToken();
     String deviceId = Get.find<DeviceInfoService>().deviceId;
@@ -37,8 +44,9 @@ class DeviceProvider extends GetConnect {
     );
 
     var body = response.body;
-    print(body);
 
+    isConnecting.value = false;
+    isDisconnecting.value = false;
     if (body['status'] == true) {
       isConnected.value = body['data']['exist_fcm_token'] ?? false;
     } else {
@@ -47,6 +55,8 @@ class DeviceProvider extends GetConnect {
   }
 
   void connect() async {
+    if (isConnected.value) return;
+    isConnecting.value = true;
     String fcmToken = await Get.find<FCMService>().readToken();
     String deviceId = Get.find<DeviceInfoService>().deviceId;
     String? token = Get.find<AuthService>().readToken();
@@ -63,17 +73,21 @@ class DeviceProvider extends GetConnect {
     );
 
     var body = response.body;
-
+    print(body);
     if (body['status'] == true) {
       updateConnection();
     } else {
+      isConnecting.value = false;
       throw body['data']['message'];
     }
   }
 
-  void disconnect() async {
+  Future disconnect() async {
+    if (!isConnected.value) return;
+    isDisconnecting.value = true;
     var deviceId = Get.find<DeviceInfoService>().deviceId;
     var token = Get.find<AuthService>().readToken();
+
     var response = await post(
       "/delete_fcm_token",
       {
@@ -85,10 +99,11 @@ class DeviceProvider extends GetConnect {
     );
 
     var body = response.body;
-
+    print(body);
     if (body['status'] == true) {
-      updateConnection();
+      await updateConnection();
     } else {
+      isDisconnecting.value = false;
       throw body['data']['message'];
     }
   }

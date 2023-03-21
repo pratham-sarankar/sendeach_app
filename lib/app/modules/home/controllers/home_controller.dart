@@ -1,14 +1,25 @@
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:sms_sender/sms_sender.dart';
+import 'package:sendeach_app/app/data/repositories/device_repository.dart';
 
 class HomeController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+  }
+
+  String getConnectionStatus() {
+    var repository = Get.find<DeviceRepository>();
+    if (repository.isLoading.value) {
+      return "Loading...";
+    } else if (repository.isConnecting.value) {
+      return "Connecting...";
+    } else if (repository.isDisconnecting.value) {
+      return "Disconnecting...";
+    } else if (repository.isConnected.value) {
+      return "Tap to disconnect";
+    } else {
+      return "Tap to connect";
+    }
   }
 
   @override

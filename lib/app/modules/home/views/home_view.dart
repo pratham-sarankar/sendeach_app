@@ -1,13 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:sendeach_app/app/data/providers/device_provider.dart';
 import 'package:sendeach_app/app/data/repositories/device_repository.dart';
 import 'package:sendeach_app/app/data/services/auth_service.dart';
 import 'package:sendeach_app/app/data/services/device_info_service.dart';
+import 'package:sendeach_app/app/data/services/sms_service.dart';
 import 'package:sendeach_app/app/routes/app_pages.dart';
+import 'package:sendeach_app/app/widgets/confirmation_dialog.dart';
+import 'package:sendeach_app/app/widgets/set_default_toast.dart';
 import 'package:sendeach_app/app/widgets/status_button.dart';
 
 import '../controllers/home_controller.dart';
@@ -25,8 +25,11 @@ class HomeView extends GetView<HomeController> {
             onSelected: (value) async {
               switch (value) {
                 case "logout":
-                  await Get.find<AuthService>().logout();
-                  Get.offAllNamed(Routes.LOGIN);
+                  var result = await Get.dialog(const ConfirmationDialog());
+                  if (result) {
+                    await Get.find<AuthService>().logout();
+                    Get.offAllNamed(Routes.LOGIN);
+                  }
                   break;
                 case "test":
                   Get.toNamed(Routes.SMS);
@@ -91,12 +94,16 @@ class HomeView extends GetView<HomeController> {
                 onPressed: () {
                   Get.find<DeviceRepository>().toggleConnection();
                 },
+                subtitle: controller.getConnectionStatus(),
               ),
             ),
             Expanded(
               flex: 2,
               child: Container(),
             ),
+            if (!Get.find<SMSService>().isDefaultSmsApp)
+              const SetDefaultToast(),
+            const SizedBox(height: 15),
           ],
         ),
       ),

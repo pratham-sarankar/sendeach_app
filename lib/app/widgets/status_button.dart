@@ -3,11 +3,18 @@ import 'package:get/get.dart';
 import 'package:sendeach_app/app/widgets/ripple_animation.dart';
 
 class StatusButton extends StatefulWidget {
-  const StatusButton(
-      {super.key, required this.isConnected, required this.onPressed});
+  const StatusButton({
+    super.key,
+    required this.isConnected,
+    required this.onPressed,
+    this.title,
+    required this.subtitle,
+  });
 
   final bool isConnected;
   final VoidCallback onPressed;
+  final String? title;
+  final String subtitle;
 
   @override
   StatusButtonState createState() => StatusButtonState();
@@ -54,37 +61,25 @@ class StatusButtonState extends State<StatusButton>
           ),
         ),
         const SizedBox(height: 20),
-        if (widget.isConnected)
-          Column(
-            children: const [
-              Text(
+        Column(
+          children: [
+            if (widget.isConnected)
+              const Text(
                 "Connected",
                 style: TextStyle(
                   fontSize: 25,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              Text(
-                "Tap to disconnect.",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w400,
-                ),
+            Text(
+              widget.subtitle,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w400,
               ),
-            ],
-          ),
-        if (!widget.isConnected)
-          Column(
-            children: const [
-              Text(
-                "Tap to connect.",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
-            ],
-          )
+            ),
+          ],
+        ),
       ],
     );
   }
